@@ -1,0 +1,14 @@
+{
+  "title": "Game Studio Teen",
+  "tagline": {
+    "en": "Draw the actors. Write the rules. Ship the game.",
+    "pt": "Desenhe os atores. Escreva as regras. Publique o jogo.",
+    "es": "Dibuja los actores. Escribe las reglas. Publica el juego.",
+    "fr": "Dessine les acteurs. Écris les règles. Publie le jeu.",
+    "de": "Zeichne die Figuren. Schreib die Regeln. Veröffentliche das Spiel."
+  },
+  "cover": "docs/screenshots/play.png",
+  "genre": "game-maker",
+  "tech": ["JavaScript", "Canvas", "PWA"],
+  "order": 11
+}
