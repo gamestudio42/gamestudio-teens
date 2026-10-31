@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://gamestudio42.github.io/gamestudio-teens/"><img src="https://img.shields.io/badge/Play_in_browser-7c5cff?style=for-the-badge&labelColor=12131c&color=7c5cff" alt="Play Game Studio Teen"></a>
-  <a href="https://github.com/gamestudio42/gamestudio-teens/deployments/github-pages"><img src="https://img.shields.io/github/deployments/gamestudio42/gamestudio-teens/github-pages?style=for-the-badge&labelColor=12131c&label=Pages" alt="GitHub Pages deployment status"></a>
+  <a href="https://github.com/gamestudio42/gamestudio-teens/actions/workflows/pages.yml"><img src="https://img.shields.io/github/actions/workflow/status/gamestudio42/gamestudio-teens/pages.yml?branch=main&style=for-the-badge&labelColor=12131c&label=Pages" alt="GitHub Pages deployment status"></a>
   <a href="https://github.com/gamestudio42/gamestudio-teens/stargazers"><img src="https://img.shields.io/github/stars/gamestudio42/gamestudio-teens?style=for-the-badge&labelColor=12131c&color=ff4f9a" alt="GitHub stars"></a>
   <a href="https://github.com/gamestudio42"><img src="https://img.shields.io/badge/Game_Studio_42-12131c?style=for-the-badge&labelColor=12131c&color=2ee6a6" alt="Game Studio 42"></a>
 </p>
@@ -121,7 +121,9 @@ python3 -m http.server 8000   # then open http://YOUR-COMPUTER-IP:8000
 | `js/tour.js`, `js/app.js` | Tour, home screen, tabs, backup and import                   |
 | `sw.js`, `js/pwa.js`   | Offline cache and the install button                            |
 
-GitHub Pages serves the `main` branch as it is. Teen projects use the `.gst` format; the
+Every push and pull request runs `tools/check.mjs` (scripts parse, JSON is valid, cached files
+exist) and `tools/smoke.mjs` (a headless browser opens the studio, visits every tab and plays
+for a moment). Pushes to `main` then publish the app files to GitHub Pages. Teen projects use the `.gst` format; the
 younger players' studio, [Game Studio Kids](https://github.com/gamestudio42/gamestudio-kids),
 uses `.gsk`. The original Portuguese notes are in [docs/LEIA-ME.md](docs/LEIA-ME.md).
 
