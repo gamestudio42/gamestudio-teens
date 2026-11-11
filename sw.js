@@ -1,6 +1,6 @@
 // Service worker: guarda o app no aparelho para ele abrir e funcionar sem internet.
 // Com internet, busca sempre a versão nova primeiro; sem internet, usa a cópia guardada.
-const VERSION = 'gst-v3';
+const VERSION = 'gst-v4';
 const FONTS = 'gst-fonts';
 const FILES = [
   './',
@@ -13,6 +13,7 @@ const FILES = [
   'js/level-editor.js',
   'js/play.js',
   'js/tour.js',
+  'js/qr.js',
   'js/app.js',
   'js/pwa.js',
   'manifest.webmanifest',

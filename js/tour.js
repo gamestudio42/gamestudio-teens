@@ -42,12 +42,14 @@
   function start() {
     build();
     syncVoice();
+    document.body.classList.add('touring');
     $('tour').hidden = false;
     index = -1;
     advance();
     cancelAnimationFrame(raf);
     const follow = () => { position(); raf = requestAnimationFrame(follow); };
     raf = requestAnimationFrame(follow);
+    if (GS.app && GS.app.syncPlayFocus) GS.app.syncPlayFocus();
   }
 
   function advance() {
@@ -100,9 +102,11 @@
     if (listener) { bus.off(listener.name, listener.fn); listener = null; }
     cancelAnimationFrame(raf);
     index = -1;
+    document.body.classList.remove('touring');
     $('tour').hidden = true;
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     if (skipped && GS.app.project) { GS.app.project.tourDone = true; GS.app.save(); }
+    if (GS.app && GS.app.syncPlayFocus) GS.app.syncPlayFocus();
   }
 
   GS.Tour = { start, stop, active: () => index >= 0 };
