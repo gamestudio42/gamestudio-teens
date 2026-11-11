@@ -724,6 +724,9 @@ window.GST_RUNTIME = function (global) {
     }
 
     function onKey(e) {
+      // The studio share dialog must not steer the game while it is open.
+      const share = document.getElementById('share');
+      if (share && !share.hidden) return;
       const k = KEYMAP[e.key];
       if (!k) return;
       if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;

@@ -3,6 +3,9 @@
   const { Storage, bus, KINDS, KIND_ORDER } = GS;
   const $ = (id) => document.getElementById(id);
   let template = 'plataforma', saveTimer = 0, toastTimer = 0;
+  // Tab to restore when leaving phone play. The tour never enters that mode.
+  let playFrom = 'fases';
+  const playMq = window.matchMedia('(max-width: 820px), (max-height: 540px)');
 
   const app = (GS.app = {
     project: null,
@@ -21,6 +24,7 @@
     toast,
     setTab,
     renderActorList,
+    syncPlayFocus,
   });
 
   // Lista de atores usada nas abas Arte e Regras
@@ -50,10 +54,11 @@
   function showHome() {
     GS.Play.stop();
     GS.ArtEditor.stop();
+    app.tab = null;
+    document.body.classList.remove('play-focus');
     GS.Tour.stop(false);
     if (app.project) Storage.save(app.project);
     app.project = null;
-    app.tab = null;
     $('studio').hidden = true;
     $('home').hidden = false;
     renderHome();
@@ -120,7 +125,16 @@
   }
 
   // ---------- Abas ----------
+  function wantsPlayFocus() {
+    return app.tab === 'testar' && !document.body.classList.contains('touring') && playMq.matches;
+  }
+
+  function syncPlayFocus() {
+    document.body.classList.toggle('play-focus', wantsPlayFocus());
+  }
+
   function setTab(t) {
+    if (t === 'testar' && app.tab && app.tab !== 'testar') playFrom = app.tab;
     if (app.tab === 'testar' && t !== 'testar') GS.Play.stop();
     if (app.tab === 'arte' && t !== 'arte') GS.ArtEditor.stop();
     app.tab = t;
@@ -128,11 +142,54 @@
       $('view-' + n).hidden = n !== t;
       $('tab-' + n).classList.toggle('on', n === t);
     });
-    if (t === 'arte') GS.ArtEditor.show();
-    if (t === 'regras') GS.RulesEditor.show();
-    if (t === 'fases') GS.LevelEditor.show();
-    if (t === 'testar') GS.Play.show();
-    bus.emit('tab:' + t);
+    try {
+      if (t === 'arte') GS.ArtEditor.show();
+      if (t === 'regras') GS.RulesEditor.show();
+      if (t === 'fases') GS.LevelEditor.show();
+      if (t === 'testar') GS.Play.show();
+    } finally {
+      // Keep the phone chrome in sync even if an editor fails to open.
+      syncPlayFocus();
+      bus.emit('tab:' + t);
+    }
+  }
+
+  // A nearby phone can open an http(s) address that is not this machine's loopback.
+  function addressStaysOnThisDevice() {
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') return true;
+    const host = location.hostname.replace(/^\[|\]$/g, '');
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+  }
+
+  function openShare() {
+    const url = location.href;
+    const localOnly = addressStaysOnThisDevice();
+    const canvas = $('share-qr');
+    $('share-url').textContent = url;
+    $('share-text').textContent = localOnly
+      ? 'Este endereço só abre neste aparelho.'
+      : 'Aponte a câmera do outro celular para este desenho.';
+    if (localOnly || !GS.qr.draw(canvas, url)) {
+      canvas.hidden = true;
+      if (!localOnly) $('share-text').textContent = 'Este endereço é longo demais para o desenho.';
+    } else canvas.hidden = false;
+    $('share-send').hidden = localOnly || typeof navigator.share !== 'function';
+    const game = GS.Play.game && GS.Play.game();
+    if (game) ['esquerda', 'direita', 'cima', 'baixo', 'espaco', 'z', 'x', 'enter'].forEach((k) => game.key(k, false));
+    $('share').hidden = false;
+    $('share-close').focus();
+  }
+
+  function closeShare() {
+    $('share').hidden = true;
+  }
+
+  async function sendShare() {
+    try {
+      await navigator.share({ title: 'Game Studio Teen', url: location.href });
+    } catch (e) {
+      if (!e || e.name !== 'AbortError') toast('Não consegui enviar o endereço.');
+    }
   }
 
   // ---------- Cópia de segurança ----------
@@ -218,6 +275,15 @@
     $('btn-backup-later').addEventListener('click', () => { Storage.pref('lembrete', Date.now()); renderHome(); });
     $('new-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') newProject(); });
     $('btn-home').addEventListener('click', showHome);
+    $('btn-share').addEventListener('click', openShare);
+    $('btn-share-studio').addEventListener('click', openShare);
+    $('share-close').addEventListener('click', closeShare);
+    $('share-send').addEventListener('click', sendShare);
+    $('share').addEventListener('click', (e) => { if (e.target === $('share')) closeShare(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('share').hidden) closeShare(); });
+    $('btn-play-back').addEventListener('click', () => setTab(playFrom || 'fases'));
+    window.addEventListener('resize', syncPlayFocus);
+    playMq.addEventListener('change', syncPlayFocus);
     $('btn-tour').addEventListener('click', () => (GS.Tour.active() ? GS.Tour.stop(false) : GS.Tour.start()));
     $('btn-export').addEventListener('click', () => { Storage.save(app.project); GS.Play.exportHTML(app.project); bus.emit('export'); });
     $('btn-save-file').addEventListener('click', () => GS.Play.exportProject(app.project));
