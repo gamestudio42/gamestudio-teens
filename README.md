@@ -101,10 +101,22 @@ On a tablet, on-screen buttons move, jump and act. Projects save themselves in t
 To install the studio as an app, choose **Instalar app** (Chrome, Edge, Android) or
 *Share → Add to Home Screen* (iPad, iPhone).
 
+## Linux (Snap)
+
+```sh
+sudo snap install gamestudio-teens
+```
+
+The Snap Store Builds tab builds `main` and releases it to the `edge` channel.
+The window runs the same studio offline. The store banner is `snap/store/banner.jpg`:
+upload that file, still named `banner.jpg`. It is not inside the snap.
+
 ## Develop
 
-There is no build step: the studio is plain JavaScript, HTML and CSS, and `index.html` also
-opens straight from disk. To test on a tablet on the same network, serve the folder:
+There is no build step for the site: the studio is plain JavaScript, HTML and CSS, and
+`index.html` also opens straight from disk. `desktop/` is the Electron window the snap
+packages; it does not change the pages that GitHub Pages serves. To test on a tablet on
+the same network, serve the folder:
 
 ```sh
 python3 -m http.server 8000   # then open http://YOUR-COMPUTER-IP:8000

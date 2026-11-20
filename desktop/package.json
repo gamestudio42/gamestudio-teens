@@ -1,0 +1,44 @@
+{
+  "name": "gamestudio-teens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop window for the Game Studio Teen web studio. The studio itself stays in the repository root.",
+  "author": "Marcel Savegnago",
+  "license": "AGPL-3.0-or-later",
+  "homepage": "https://gamestudio42.github.io/gamestudio-teens/",
+  "type": "module",
+  "main": "main.mjs",
+  "scripts": {
+    "start": "electron .",
+    "smoke": "electron . --smoke",
+    "dist:dir": "node scripts/pack.mjs"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "io.github.gamestudio42.gamestudio-teens",
+    "productName": "Game Studio Teen",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.mjs",
+      "package.json"
+    ],
+    "asar": true,
+    "linux": {
+      "target": [
+        "dir"
+      ],
+      "category": "Game",
+      "icon": "../icons/icon-512.png",
+      "synopsis": "Draw the actors. Write the rules. Ship the game.",
+      "description": "A 2D game maker for readers aged about ten to fifteen.",
+      "executableName": "gamestudio-teens"
+    },
+    "executableName": "gamestudio-teens"
+  }
+}

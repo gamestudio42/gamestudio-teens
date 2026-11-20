@@ -15,6 +15,14 @@ Cada estilo tem a sua paleta de 16 cores, que fica salva no projeto e pode ser e
 Abra o `index.html` no navegador. Não precisa instalar nada.
 Para testar no tablet na mesma rede: `python3 -m http.server 8000` nesta pasta e abra `http://IP-DO-COMPUTADOR:8000`.
 
+No Linux, o mesmo estúdio também instala como snap e abre sem rede:
+
+```sh
+sudo snap install gamestudio-teens
+```
+
+A aba Builds da Snap Store gera o pacote a partir de `main` e publica no canal `edge`.
+
 ## O que tem
 
 - **Novo projeto com modelos:** Plataforma Neon (2 fases prontas), Plataforma Bosque (as mesmas 2 fases, na floresta), Aventura vista de cima (labirinto neon com inimigos que perseguem) ou Do zero. "Começar com o tour" vem marcado.
