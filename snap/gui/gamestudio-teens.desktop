@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Game Studio Teen
+Comment=Draw the actors. Write the rules. Ship the game.
+Exec=gamestudio-teens
+Icon=${SNAP}/meta/gui/icon.png
+Categories=Game;Education;
+StartupWMClass=gamestudio-teens
+Terminal=false
