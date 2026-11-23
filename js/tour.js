@@ -2,7 +2,8 @@
 // a pessoa fazer; os outros têm o botão Próximo.
 (function () {
   const { bus } = GS;
-  let index = -1, raf = 0, listener = null, built = false;
+  let index = -1, raf = 0, listener = null, built = false, revealed = -1;
+  const coarseMq = window.matchMedia('(pointer: coarse)');
   const $ = (id) => document.getElementById(id);
 
   const STEPS = [
@@ -23,7 +24,7 @@
     built = true;
     $('tour-skip').addEventListener('click', () => stop(true));
     $('tour-next').addEventListener('click', advance);
-    $('tour-min').addEventListener('click', () => $('tour-panel').classList.toggle('min'));
+    $('tour-min').addEventListener('click', () => { $('tour-panel').classList.toggle('min'); syncTourDock(); });
     $('tour-voice').addEventListener('click', () => {
       const on = GS.Storage.pref('voz') === 'on' ? 'off' : 'on';
       GS.Storage.pref('voz', on);
@@ -39,12 +40,26 @@
     $('tour-voice').title = on ? 'Desligar a voz' : 'Ler em voz alta';
   }
 
+  // On a coarse pointer the card is a top bar and the studio fills the space under it.
+  function syncTourDock() {
+    const dock = coarseMq.matches && document.body.classList.contains('touring');
+    $('tour').classList.toggle('dock', dock);
+    document.body.classList.toggle('tour-dock', dock);
+    if (!dock) {
+      document.documentElement.style.removeProperty('--tour-dock');
+      return;
+    }
+    const bottom = Math.ceil($('tour-panel').getBoundingClientRect().bottom);
+    document.documentElement.style.setProperty('--tour-dock', Math.max(bottom, 0) + 'px');
+  }
+
   function start() {
     build();
     syncVoice();
     document.body.classList.add('touring');
     $('tour').hidden = false;
     index = -1;
+    revealed = -1;
     advance();
     cancelAnimationFrame(raf);
     const follow = () => { position(); raf = requestAnimationFrame(follow); };
@@ -63,6 +78,8 @@
     $('tour-next').hidden = !s.next;
     $('tour-next').textContent = s.finish ? 'Terminar' : 'Próximo';
     GS.say(s.text);
+    revealed = -1;
+    syncTourDock();
     if (s.wait) {
       const fn = () => {
         bus.off(s.wait, fn);
@@ -74,7 +91,18 @@
     }
   }
 
+  function reveal(el) {
+    if (!$('tour').classList.contains('dock') || revealed === index) return;
+    revealed = index;
+    const studio = $('studio').getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    if (r.top < studio.top + 8 || r.bottom > studio.bottom - 8 || r.left < studio.left || r.right > studio.right) {
+      el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  }
+
   function position() {
+    syncTourDock();
     const s = STEPS[index], ring = $('tour-ring');
     const el = s && s.target && document.querySelector(s.target);
     if (!el || el.offsetParent === null) { ring.style.display = 'none'; return; }
@@ -84,6 +112,7 @@
     ring.style.top = r.top - 5 + 'px';
     ring.style.width = r.width + 10 + 'px';
     ring.style.height = r.height + 10 + 'px';
+    if ($('tour').classList.contains('dock')) { reveal(el); return; }
     // o painel vai para o canto que não cobre o destaque
     const panel = $('tour-panel'), pw = panel.offsetWidth + 16, ph = panel.offsetHeight + 16;
     const W = window.innerWidth, H = window.innerHeight;
@@ -104,6 +133,8 @@
     index = -1;
     document.body.classList.remove('touring');
     $('tour').hidden = true;
+    revealed = -1;
+    syncTourDock();
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     if (skipped && GS.app.project) { GS.app.project.tourDone = true; GS.app.save(); }
     if (GS.app && GS.app.syncPlayFocus) GS.app.syncPlayFocus();

@@ -4,6 +4,24 @@
   const { KINDS, KIND_ORDER, T, bus } = GS;
 
   let built = false, selected = null, erase = false, zoom = 2, painting = null;
+  // Touch has no right button: a still finger erases, a quick tap still places.
+  const HOLD_MS = 500;
+  const HOLD_SLOP = 8;
+  let holdTimer = 0;
+  const coarseMq = window.matchMedia('(pointer: coarse)');
+
+  function syncHint() {
+    const el = $('lvl-hint');
+    if (!el) return;
+    el.textContent = coarseMq.matches
+      ? 'Toque ou arraste para colocar. Segure o dedo para apagar, ou toque em Apagar. ↩️ desfaz. Cada fase tem um só jogador.'
+      : 'Clique ou arraste para colocar. Botão direito apaga, ↩️ desfaz. Cada fase tem um só jogador.';
+  }
+  function clearHold() {
+    if (!holdTimer) return;
+    clearTimeout(holdTimer);
+    holdTimer = 0;
+  }
   // Desfazer e refazer: fotos das fases do projeto antes de cada mudança
   let hist = { id: null, past: [], future: [] };
   const $ = (id) => document.getElementById(id);
@@ -101,23 +119,49 @@
     $('lvl-zoom-in').addEventListener('click', () => { zoom = Math.min(4, zoom + 0.5); fit(); });
     $('lvl-zoom-out').addEventListener('click', () => { zoom = Math.max(1, zoom - 0.5); fit(); });
 
+    syncHint();
+    coarseMq.addEventListener('change', syncHint);
+
     const c = $('lvl-canvas');
     c.addEventListener('contextmenu', (e) => e.preventDefault());
     c.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      c.setPointerCapture(e.pointerId);
-      painting = { erase: erase || e.button === 2, before: snap(), changed: false };
-      placeAt(e);
+      try { c.setPointerCapture(e.pointerId); } catch (err) { /* pointer already gone */ }
+      clearHold();
+      const hold = (e.pointerType === 'touch' || e.pointerType === 'pen') && e.button === 0 && !erase;
+      painting = { erase: erase || e.button === 2, before: snap(), changed: false, hold, x: e.clientX, y: e.clientY };
+      if (!hold) { placeAt(e); return; }
+      holdTimer = setTimeout(() => {
+        holdTimer = 0;
+        if (!painting || !painting.hold) return;
+        painting.hold = false;
+        painting.erase = true;
+        placeAt({ clientX: painting.x, clientY: painting.y });
+      }, HOLD_MS);
     });
     c.addEventListener('pointermove', (e) => {
       if (!painting) return;
+      if (painting.hold) {
+        const dx = e.clientX - painting.x, dy = e.clientY - painting.y;
+        if (dx * dx + dy * dy <= HOLD_SLOP * HOLD_SLOP) return;
+        clearHold();
+        painting.hold = false;
+        placeAt({ clientX: painting.x, clientY: painting.y });
+      }
       const a = !painting.erase && byId(selected);
       if (a && a.kind === 'jogador') return;
       placeAt(e);
     });
-    const end = () => { painting = null; };
+    const end = (e) => {
+      if (!painting) return;
+      const pending = painting.hold;
+      clearHold();
+      painting.hold = false;
+      if (pending) placeAt(e);
+      painting = null;
+    };
     c.addEventListener('pointerup', end);
-    c.addEventListener('pointercancel', end);
+    c.addEventListener('pointercancel', () => { clearHold(); painting = null; });
   }
 
   const byId = (id) => project().actors.find((a) => a.id === id);

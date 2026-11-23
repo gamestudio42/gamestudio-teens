@@ -142,7 +142,7 @@ input[type='color'] { width: 44px; height: 32px; border: 1px solid var(--line); 
 /* ---------- Arte ---------- */
 .art-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .art-stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
-#art-canvas { border-radius: 8px; box-shadow: 0 0 0 1px var(--line), 0 12px 40px rgba(0, 0, 0, 0.4); touch-action: none; cursor: crosshair; }
+#art-canvas { border-radius: 8px; box-shadow: 0 0 0 1px var(--line), 0 12px 40px rgba(0, 0, 0, 0.4); touch-action: none; cursor: crosshair; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .frames { display: flex; gap: 8px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 8px; overflow-x: auto; }
 .frame-list { display: flex; gap: 6px; }
 .frame { position: relative; border: 2px solid var(--line); background: var(--bg); border-radius: 8px; width: 52px; height: 52px; padding: 4px; flex: none; }
@@ -222,7 +222,7 @@ input[type='color'] { width: 44px; height: 32px; border: 1px solid var(--line); 
 .pal-actor canvas { width: 30px; height: 30px; background: var(--bg); border-radius: 6px; }
 .pal-actor.on { border-color: var(--accent); background: rgba(124, 92, 255, 0.22); }
 .lvl-scroll { flex: 1; min-height: 0; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
-#lvl-canvas { display: block; touch-action: none; cursor: crosshair; border-radius: 4px; }
+#lvl-canvas { display: block; touch-action: none; cursor: crosshair; border-radius: 4px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .hint { margin: 0; color: var(--muted); font-size: 13px; }
 
 /* ---------- Testar ---------- */
@@ -468,3 +468,66 @@ body.play-focus #view-testar.debugging #game-canvas {
   body.play-focus .play-back { min-height: 36px; padding: 4px 10px; }
   body.play-focus .play-wrap { gap: 6px; }
 }
+
+/* Coarse pointers: 44px targets, a touch erase label, and a tour that does not cover the editor. */
+@media (pointer: coarse) {
+  #studio .btn,
+  #studio .tool,
+  #studio .tab,
+  #studio .swatch,
+  #studio .actor-item,
+  #studio .pal-actor,
+  #studio .lvl-item,
+  #studio .frame,
+  #studio .dr,
+  #studio .input,
+  #studio select,
+  #tour .btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  #studio .btn.icon { width: 44px; min-width: 44px; }
+  #studio .lvl-opts > summary { min-height: 44px; padding-top: 12px; padding-bottom: 12px; }
+  #studio .check { min-height: 44px; }
+  #studio .check input { width: 44px; height: 44px; margin: 0; flex: none; }
+  #studio input[type='color'] { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  #studio input[type='range'] { min-height: 44px; }
+  #view-arte .palette { grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); }
+  #lvl-erase span { display: inline; }
+  body.play-focus .play-back { min-height: 44px; }
+}
+
+#tour.dock #tour-panel,
+#tour.dock #tour-panel[data-corner='bl'],
+#tour.dock #tour-panel[data-corner='tr'],
+#tour.dock #tour-panel[data-corner='tl'] {
+  top: env(safe-area-inset-top, 0px);
+  right: env(safe-area-inset-right, 0px);
+  bottom: auto;
+  left: env(safe-area-inset-left, 0px);
+  width: auto;
+  max-height: min(40vh, 220px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: none;
+  animation: none;
+}
+#tour.dock #tour-text { overflow: auto; min-height: 0; margin: 4px 0 8px; }
+#tour.dock .tour-buttons { flex: none; flex-wrap: wrap; }
+body.tour-dock { overflow: hidden; }
+body.tour-dock #studio {
+  position: fixed;
+  top: var(--tour-dock, 0px);
+  right: env(safe-area-inset-right, 0px);
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: env(safe-area-inset-left, 0px);
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+}
+body.tour-dock .view { overflow: auto; min-height: 0; }
